@@ -1,0 +1,104 @@
+<?php
+/**
+   Template Name: Home Page 
+ *
+ * This is the most generic template file in a WordPress theme
+ * and one of the two required files for a theme (the other being style.css).
+ * It is used to display a page when nothing more specific matches a query.
+ * E.g., it puts together the home page when no home.php file exists.
+ *
+ * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty
+ * @since 1.0.0
+ */
+
+get_header();
+?>
+<?php 
+$terms = get_terms('leagues', array( 'hide_empty' => 0 ,'order' => 'ASC',));	
+
+$defaults = array( 'taxonomy' => 'post_tag' );
+ $tags = get_terms( $defaults );
+
+?>
+	<li id="categories">
+	<h2><?php _e( 'Categories:' ); ?></h2>
+	<form id="category-select" class="category-select" action="<?php echo get_permalink($page_id); ?>" method="get">
+	<!-- $page_id is the current page id -->
+	  <select name="category_select" >
+	  	<option value="all">All</option>
+	  	<?php foreach($terms as $cat) { ?>
+ 			
+ 			 <?php   $selected = ($cat == $cat->name) ? ' selected="selected"' : ''; ?>
+ 			 <option value="<?php echo $cat->term_id; ?>"<?php echo $selected; ?>><?php echo $cat->name; ?></option>
+ 		 	<?php }  ?>
+
+        </select>
+
+        <select name="tag_select" >
+	  	<option value="all">All</option>
+	  	<?php foreach($tags as $tag) { ?>
+ 			
+ 			 <?php   $selected1 = ($tag == $tag ->name) ? ' selected="selected"' : ''; ?>
+ 			 <option value="<?php echo $tag->term_id; ?>"<?php echo $selected1; ?>><?php echo $tag->name; ?></option>
+ 		 	<?php }  ?>
+
+        </select>
+	    <input type="submit" name="submit" value="view" />
+	</form>
+	</li>
+	<?php   if($_GET['category_select']   || $_GET['tag_select'] ) { ?>
+		<div class="container">
+		    <div class="row" style="text-align: center;"> 
+		  		<h3>Recent Muvies  Show</h3>
+						<?php 
+						//$post_args = array( 'post_type' => 'muvies', 'posts_per_page' => 20 );
+						 $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
+					     $cat = ( isset( $_GET['category_select'] ) ) ? $_GET['category_select'] : 1;
+					     $tag = ( isset( $_GET['tag_select'] ) ) ? $_GET['tag_select'] : 1;
+							$args=array(
+					   			 'posts_per_page' => 20,    
+					   			 'post_type' => 'muvies',
+					    		 'paged'          => $paged,
+					    		 'tag_id'=> $tag,
+					    		 'tax_query' => array(
+					      		  array(
+					          		  'taxonomy' => 'leagues',
+					          		  'field'    => 'id',
+					          		  'terms'    => $cat,
+
+					       			 ),
+					      		 
+					   			 ),
+					 		);
+						//$query = new WP_Query( $args );
+						$post_query = new WP_Query( $args ); 
+
+						//echo "<pre>"; print_r($post_query);die;
+						 
+						if ( $post_query->have_posts() ) : 
+						while ( $post_query->have_posts() ) : $post_query->the_post(); ?>
+						 
+						<h4><?php the_title(); ?></h4>
+						<div class="posts-entry">
+						<?php the_content(); ?> 
+
+						<div class="profile-photo"><div class="profile-icon">&#0102;</div><?php the_post_thumbnail(array('230','170'),array('alt' => '')); ?> </div>
+						</div>
+						<?php wp_reset_postdata(); ?>
+						 
+						<?php endwhile; // ending while loop ?> 
+						<?php else:  ?>
+						<p><?php _e( 'Sorry, no Muvies matched your criteria.' ); ?></p>
+						<?php endif; // ending condition ?>
+		       </div>
+		</div>
+
+	<?php } ?>
+
+
+
+<?php
+get_footer();
